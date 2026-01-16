@@ -117,8 +117,9 @@
   <script>
     const API_BASE = 'https://stone-wars-api.samodio-fl.workers.dev';
     const characters = [
-      { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png' },
-{ id: 'vader', name: 'Darth Vader', subtitle: 'Sith Lord', image: 'https://lumiere-a.akamaihd.net/v1/images/darth-vader-main_4560aff7.jpeg' }    
+  { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png' },
+  { id: 'vader', name: 'Darth Vader', subtitle: 'Sith Lord', image: 'https://i.imgur.com/BcLKvpW.png' }
+];
       let currentCharacter = null, sessionId = null, mediaRecorder = null, audioChunks = [], isRecording = false, isSpeaking = false, selfVideoStream = null, silenceTimer = null;
     const contactsList = document.getElementById('contactsList'), facetimeScreen = document.getElementById('facetimeScreen'), facetimeBackground = document.getElementById('facetimeBackground'), facetimeName = document.getElementById('facetimeName'), facetimeStatus = document.getElementById('facetimeStatus'), endCallBtn = document.getElementById('endCallBtn'), statusTime = document.getElementById('statusTime'), audioPlayer = document.getElementById('audioPlayer'), selfVideo = document.getElementById('selfVideo'), listeningIndicator = document.getElementById('listeningIndicator');
     
