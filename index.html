@@ -113,54 +113,104 @@
     </div>
     <div class="home-indicator"></div>
   </div>
-  <audio id="audioPlayer" style="display: none;"></audio>
+  <audio id="audioPlayer" playsinline webkit-playsinline></audio>
   <script>
-    const API_BASE = 'https://stone-wars-api.samodio-fl.workers.dev';
-    const characters = [
-      { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png' },
+    var API_BASE = 'https://stone-wars-api.samodio-fl.workers.dev';
+    var characters = [
+      { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/yoda.jpg' },
       { id: 'vader', name: 'Darth Vader', subtitle: 'Sith Lord', image: 'https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/vader.jpg' }
     ];
-    let currentCharacter = null, mediaRecorder = null, audioChunks = [], isRecording = false, isSpeaking = false, selfVideoStream = null, silenceTimer = null, callActive = false;
-    const contactsList = document.getElementById('contactsList'), facetimeScreen = document.getElementById('facetimeScreen'), facetimeBackground = document.getElementById('facetimeBackground'), facetimeName = document.getElementById('facetimeName'), facetimeStatus = document.getElementById('facetimeStatus'), endCallBtn = document.getElementById('endCallBtn'), statusTime = document.getElementById('statusTime'), audioPlayer = document.getElementById('audioPlayer'), selfVideo = document.getElementById('selfVideo'), listeningIndicator = document.getElementById('listeningIndicator');
+    var currentCharacter = null;
+    var mediaRecorder = null;
+    var audioChunks = [];
+    var isRecording = false;
+    var isSpeaking = false;
+    var selfVideoStream = null;
+    var silenceTimer = null;
+    var callActive = false;
+    var audioContext = null;
     
-    function updateTime() { const now = new Date(); statusTime.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`; } updateTime(); setInterval(updateTime, 1000);
+    var contactsList = document.getElementById('contactsList');
+    var facetimeScreen = document.getElementById('facetimeScreen');
+    var facetimeBackground = document.getElementById('facetimeBackground');
+    var facetimeName = document.getElementById('facetimeName');
+    var facetimeStatus = document.getElementById('facetimeStatus');
+    var endCallBtn = document.getElementById('endCallBtn');
+    var statusTime = document.getElementById('statusTime');
+    var audioPlayer = document.getElementById('audioPlayer');
+    var selfVideo = document.getElementById('selfVideo');
+    var listeningIndicator = document.getElementById('listeningIndicator');
+    
+    function updateTime() { 
+      var now = new Date(); 
+      statusTime.textContent = now.getHours() + ':' + now.getMinutes().toString().padStart(2,'0'); 
+    } 
+    updateTime(); 
+    setInterval(updateTime, 1000);
     
     function renderContacts() { 
-      contactsList.innerHTML = characters.map(char => `<div class="contact-item" data-id="${char.id}"><div class="contact-avatar"><img src="${char.image}" alt="${char.name}" onerror="this.parentElement.innerHTML='👤'"></div><div class="contact-info"><div class="contact-name">${char.name}</div><div class="contact-subtitle">${char.subtitle}</div></div><div class="contact-action"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div></div>`).join(''); 
-      document.querySelectorAll('.contact-item').forEach(item => item.addEventListener('click', () => startCall(item.dataset.id))); 
+      var html = '';
+      for (var i = 0; i < characters.length; i++) {
+        var char = characters[i];
+        html += '<div class="contact-item" data-id="' + char.id + '"><div class="contact-avatar"><img src="' + char.image + '" alt="' + char.name + '" onerror="this.parentElement.innerHTML=\'👤\'"></div><div class="contact-info"><div class="contact-name">' + char.name + '</div><div class="contact-subtitle">' + char.subtitle + '</div></div><div class="contact-action"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div></div>';
+      }
+      contactsList.innerHTML = html;
+      var items = document.querySelectorAll('.contact-item');
+      for (var j = 0; j < items.length; j++) {
+        items[j].addEventListener('click', function() { startCall(this.dataset.id); }); 
+      }
     }
     
-    async function startSelfVideo() { 
-      try { 
-        selfVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); 
-        const video = document.createElement('video'); 
-        video.srcObject = selfVideoStream; 
-        video.autoplay = true; 
-        video.playsInline = true; 
-        video.muted = true; 
-        selfVideo.innerHTML = ''; 
-        selfVideo.appendChild(video); 
-      } catch (e) { console.log('Camera not available'); } 
+    function startSelfVideo() { 
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+        .then(function(stream) {
+          selfVideoStream = stream;
+          var video = document.createElement('video'); 
+          video.srcObject = stream; 
+          video.autoplay = true; 
+          video.playsInline = true; 
+          video.muted = true; 
+          selfVideo.innerHTML = ''; 
+          selfVideo.appendChild(video);
+        })
+        .catch(function(e) { 
+          console.log('Camera not available'); 
+        });
     }
     
     function stopSelfVideo() { 
-      if (selfVideoStream) { selfVideoStream.getTracks().forEach(track => track.stop()); selfVideoStream = null; } 
-      selfVideo.innerHTML = `<div class="self-video-placeholder"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>`; 
+      if (selfVideoStream) { 
+        var tracks = selfVideoStream.getTracks();
+        for (var i = 0; i < tracks.length; i++) {
+          tracks[i].stop();
+        }
+        selfVideoStream = null; 
+      } 
+      selfVideo.innerHTML = '<div class="self-video-placeholder"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>'; 
     }
     
-    async function setupRecording() { 
-      try { 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); 
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); }; 
-        mediaRecorder.onstop = async () => { 
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
-          audioChunks = []; 
-          if (audioBlob.size > 1000 && callActive) { await sendAudio(audioBlob); } 
-          else if (callActive) { startListening(); }
-        }; 
-        return true; 
-      } catch (e) { console.error('Microphone not available:', e); return false; } 
+    function setupRecording() { 
+      return navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); 
+          mediaRecorder.ondataavailable = function(e) { 
+            if (e.data.size > 0) audioChunks.push(e.data); 
+          }; 
+          mediaRecorder.onstop = function() { 
+            var audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
+            audioChunks = []; 
+            if (audioBlob.size > 1000 && callActive) { 
+              sendAudio(audioBlob); 
+            } else if (callActive) { 
+              startListening(); 
+            }
+          }; 
+          return true;
+        })
+        .catch(function(e) { 
+          console.error('Microphone not available:', e); 
+          return false; 
+        });
     }
     
     function startListening() { 
@@ -169,7 +219,9 @@
       mediaRecorder.start(); 
       isRecording = true; 
       listeningIndicator.classList.add('active');
-      silenceTimer = setTimeout(() => { if (isRecording) stopListening(); }, 5000);
+      silenceTimer = setTimeout(function() { 
+        if (isRecording) stopListening(); 
+      }, 5000);
     }
     
     function stopListening() { 
@@ -180,62 +232,111 @@
       listeningIndicator.classList.remove('active');
     }
     
-    async function startCall(characterId) { 
-      currentCharacter = characters.find(c => c.id === characterId); 
+    function initAudio() {
+      // Create audio context on user interaction to enable audio on iOS
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      // Play silent audio to unlock audio playback
+      audioPlayer.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAbD/k0cMAAAAAAAAAAAAAAAAAAAA//MUxAABuAHkAUAAAIgAAAAA/+REFJJSUb/8xTEMgG4BesZQBJwiP/zFMRQAbgB5BlAGcCI//MUxGIBuAHiGUAQAIv/8xTEegG4AdwZQBAAiP/zFMSSAbgBzBlAGACL//MUxKoBuAHEGUAYAI3/8xTEwAG4AawZQBgAi//zFMTYAbgBjBlAEACL//MUxO4BuAF8GUAQAIL/8xTFBgG4AWQZQAgAg//zFMUeAbgBPBlACACL//MUxTYBuAEsGUAIAIv/8xTFTgG4AOQZQBAAA//zFMVmAbgAAAFAAAAA//MUxX4AAAADSUUAAP/zFMWWAAADSAAAAAD/8xTFrgAAA0gAAAAA//MUxcYAAANIAAAAAP/zFMXeAAADSAAAAAD/8xTF9gAAA0gAAAAA';
+      audioPlayer.play().catch(function(){});
+    }
+    
+    function startCall(characterId) { 
+      for (var i = 0; i < characters.length; i++) {
+        if (characters[i].id === characterId) {
+          currentCharacter = characters[i];
+          break;
+        }
+      }
       if (!currentCharacter) return; 
+      
+      // Initialize audio on user tap (required for iOS)
+      initAudio();
+      
       callActive = true;
       facetimeScreen.classList.add('active', 'connecting'); 
-      facetimeBackground.style.backgroundImage = `url('${currentCharacter.image}')`; 
+      facetimeBackground.style.backgroundImage = 'url(' + currentCharacter.image + ')'; 
       facetimeName.textContent = currentCharacter.name; 
       facetimeStatus.textContent = 'Connecting...'; 
       startSelfVideo(); 
-      await setupRecording(); 
-      try { 
-        const response = await fetch(`${API_BASE}/api/startCall`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ character: characterId }) }); 
-        const data = await response.json(); 
+      
+      setupRecording().then(function() {
+        return fetch(API_BASE + '/api/startCall', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ character: characterId }) 
+        });
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
         if (data.error) throw new Error(data.error); 
         facetimeScreen.classList.remove('connecting'); 
         facetimeStatus.textContent = 'FaceTime Video'; 
-        await playAudio(data.audio); 
-      } catch (error) { 
+        playAudio(data.audio);
+      })
+      .catch(function(error) { 
         console.error('Start call error:', error); 
         facetimeStatus.textContent = 'Connection failed'; 
         setTimeout(endCall, 2000); 
-      } 
+      });
+    }
     
-    async function sendAudio(audioBlob) { 
+    function sendAudio(audioBlob) { 
       if (!callActive) return; 
       listeningIndicator.classList.remove('active');
       facetimeStatus.textContent = 'Thinking...';
-      try { 
-        const formData = new FormData(); 
-        formData.append('character', currentCharacter.id); 
-        formData.append('audio', audioBlob); 
-        const response = await fetch(`${API_BASE}/api/chat`, { method: 'POST', body: formData }); 
-        const data = await response.json(); 
-        if (data.error) throw new Error(data.error); 
-        await playAudio(data.audio); 
-      } catch (error) { 
-        console.error('Chat error:', error); 
-        facetimeStatus.textContent = 'FaceTime Video';
-        if (callActive) startListening(); 
-      } 
+      
+      var formData = new FormData(); 
+      formData.append('character', currentCharacter.id); 
+      formData.append('audio', audioBlob); 
+      
+      fetch(API_BASE + '/api/chat', { method: 'POST', body: formData })
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(data) {
+          if (data.error) throw new Error(data.error); 
+          playAudio(data.audio);
+        })
+        .catch(function(error) { 
+          console.error('Chat error:', error); 
+          facetimeStatus.textContent = 'FaceTime Video';
+          if (callActive) startListening(); 
+        });
     }
     
-    async function playAudio(audioDataUrl) { 
-      return new Promise((resolve) => { 
-        if (!audioDataUrl) { resolve(); if (callActive) startListening(); return; } 
-        isSpeaking = true; 
-        facetimeStatus.textContent = 'Speaking...';
-        audioPlayer.src = audioDataUrl; 
-        audioPlayer.onended = () => { 
-          isSpeaking = false; 
-          facetimeStatus.textContent = 'FaceTime Video'; 
-          resolve(); 
-          if (callActive) startListening();
-        }; 
-        audioPlayer.onerror = () => { isSpeaking = false; facetimeStatus.textContent = 'FaceTime Video'; resolve(); if (callActive) startListening(); }; 
-        audioPlayer.play().catch(() => { isSpeaking = false; resolve(); if (callActive) startListening(); }); 
+    function playAudio(audioDataUrl) { 
+      if (!audioDataUrl || !callActive) { 
+        if (callActive) startListening(); 
+        return; 
+      }
+      
+      isSpeaking = true; 
+      facetimeStatus.textContent = 'Speaking...';
+      audioPlayer.src = audioDataUrl; 
+      
+      audioPlayer.onended = function() { 
+        isSpeaking = false; 
+        facetimeStatus.textContent = 'FaceTime Video'; 
+        if (callActive) startListening();
+      }; 
+      
+      audioPlayer.onerror = function() { 
+        isSpeaking = false; 
+        facetimeStatus.textContent = 'FaceTime Video'; 
+        if (callActive) startListening(); 
+      }; 
+      
+      audioPlayer.play().catch(function(e) { 
+        console.error('Audio play error:', e);
+        isSpeaking = false; 
+        if (callActive) startListening(); 
       }); 
     }
     
