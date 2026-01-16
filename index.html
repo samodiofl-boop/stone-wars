@@ -9,260 +9,48 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Stone Wars</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #000;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    .container {
-      width: 100%;
-      height: 100vh;
-      background: #000;
-      position: relative;
-    }
-    .status-bar {
-      height: 54px;
-      padding: 12px 24px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-    }
-    .status-time {
-      font-size: 17px;
-      font-weight: 600;
-      color: white;
-    }
-    .contacts-screen {
-      height: 100%;
-      background: #000;
-      padding-top: 54px;
-      overflow-y: auto;
-    }
-    .contacts-header {
-      padding: 8px 16px 12px;
-    }
-    .contacts-title {
-      font-size: 34px;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 12px;
-    }
-    .contacts-list {
-      padding: 0 0 100px;
-    }
-    .contact-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      gap: 15px;
-      cursor: pointer;
-      border-bottom: 0.5px solid #2c2c2e;
-    }
-    .contact-item:active {
-      background: #1c1c1e;
-    }
-    .contact-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: #2c2c2e;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-    }
-    .contact-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .contact-info {
-      flex: 1;
-    }
-    .contact-name {
-      font-size: 18px;
-      color: white;
-      margin-bottom: 2px;
-    }
-    .contact-subtitle {
-      font-size: 14px;
-      color: #8e8e93;
-    }
-    .contact-action svg {
-      width: 24px;
-      height: 24px;
-      fill: #30d158;
-    }
-    .call-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #000;
-      z-index: 200;
-      display: none;
-      flex-direction: column;
-    }
-    .call-screen.active {
-      display: flex;
-    }
-    .call-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-size: cover;
-      background-position: center top;
-    }
-    .call-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 20%, transparent 60%, rgba(0,0,0,0.8) 100%);
-    }
-    .call-header {
-      position: absolute;
-      top: 60px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      z-index: 10;
-    }
-    .call-name {
-      font-size: 24px;
-      font-weight: 600;
-      color: white;
-    }
-    .call-status {
-      font-size: 15px;
-      color: rgba(255,255,255,0.8);
-      margin-top: 4px;
-    }
-    .self-video {
-      position: absolute;
-      top: 70px;
-      right: 16px;
-      width: 100px;
-      height: 140px;
-      background: #1a1a1a;
-      border-radius: 16px;
-      overflow: hidden;
-      z-index: 20;
-    }
-    .self-video video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-    .listening-indicator {
-      position: absolute;
-      bottom: 150px;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      opacity: 0;
-    }
-    .listening-indicator.active {
-      opacity: 1;
-    }
-    .listening-dot {
-      width: 12px;
-      height: 12px;
-      background: #30d158;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #000; min-height: 100vh; overflow: hidden; }
+    .container { width: 100%; height: 100vh; background: #000; position: relative; }
+    .status-bar { height: 54px; padding: 12px 24px 0; display: flex; justify-content: space-between; position: absolute; top: 0; left: 0; right: 0; z-index: 100; }
+    .status-time { font-size: 17px; font-weight: 600; color: white; }
+    .contacts-screen { height: 100%; background: #000; padding-top: 54px; overflow-y: auto; }
+    .contacts-header { padding: 8px 16px 12px; }
+    .contacts-title { font-size: 34px; font-weight: 700; color: white; margin-bottom: 12px; }
+    .contacts-list { padding: 0 0 100px; }
+    .contact-item { display: flex; align-items: center; padding: 12px 16px; gap: 15px; cursor: pointer; border-bottom: 0.5px solid #2c2c2e; }
+    .contact-item:active { background: #1c1c1e; }
+    .contact-avatar { width: 60px; height: 60px; border-radius: 50%; background: #2c2c2e; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .contact-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .contact-info { flex: 1; }
+    .contact-name { font-size: 18px; color: white; margin-bottom: 2px; }
+    .contact-subtitle { font-size: 14px; color: #8e8e93; }
+    .contact-action svg { width: 24px; height: 24px; fill: #30d158; }
+    .call-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 200; display: none; flex-direction: column; }
+    .call-screen.active { display: flex; }
+    .call-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center top; }
+    .call-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 20%, transparent 60%, rgba(0,0,0,0.8) 100%); }
+    .call-header { position: absolute; top: 60px; left: 0; right: 0; text-align: center; z-index: 10; }
+    .call-name { font-size: 24px; font-weight: 600; color: white; }
+    .call-status { font-size: 15px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+    .self-video { position: absolute; top: 70px; right: 16px; width: 100px; height: 140px; background: #1a1a1a; border-radius: 16px; overflow: hidden; z-index: 20; }
+    .self-video video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .listening-indicator { position: absolute; bottom: 150px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; opacity: 0; }
+    .listening-indicator.active { opacity: 1; }
+    .listening-dot { width: 12px; height: 12px; background: #30d158; border-radius: 50%; animation: pulse 1.5s infinite; }
     .listening-dot:nth-child(2) { animation-delay: 0.2s; }
     .listening-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.3); opacity: 1; }
-    }
-    .call-controls {
-      position: absolute;
-      bottom: 50px;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-    }
-    .end-btn {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: #ff3b30;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .end-btn svg {
-      width: 30px;
-      height: 30px;
-      fill: white;
-    }
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 84px;
-      background: rgba(18,18,18,0.95);
-      border-top: 0.5px solid #2c2c2e;
-      display: flex;
-      justify-content: space-around;
-      padding: 8px 0 28px;
-      z-index: 50;
-    }
-    .tab-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      opacity: 0.6;
-    }
-    .tab-item.active {
-      opacity: 1;
-    }
-    .tab-item svg {
-      width: 28px;
-      height: 28px;
-      fill: #8e8e93;
-    }
-    .tab-item.active svg {
-      fill: #007aff;
-    }
-    .tab-item span {
-      font-size: 10px;
-      color: #8e8e93;
-    }
-    .tab-item.active span {
-      color: #007aff;
-    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } }
+    .call-controls { position: absolute; bottom: 50px; left: 0; right: 0; z-index: 10; display: flex; justify-content: center; }
+    .end-btn { width: 70px; height: 70px; border-radius: 50%; background: #ff3b30; border: none; display: flex; align-items: center; justify-content: center; }
+    .end-btn svg { width: 30px; height: 30px; fill: white; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 84px; background: rgba(18,18,18,0.95); border-top: 0.5px solid #2c2c2e; display: flex; justify-content: space-around; padding: 8px 0 28px; z-index: 50; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6; }
+    .tab-item.active { opacity: 1; }
+    .tab-item svg { width: 28px; height: 28px; fill: #8e8e93; }
+    .tab-item.active svg { fill: #007aff; }
+    .tab-item span { font-size: 10px; color: #8e8e93; }
+    .tab-item.active span { color: #007aff; }
   </style>
 </head>
 <body>
@@ -270,7 +58,6 @@
     <div class="status-bar">
       <div class="status-time" id="statusTime">9:41</div>
     </div>
-    
     <div class="contacts-screen">
       <div class="contacts-header">
         <h1 class="contacts-title">Contacts</h1>
@@ -291,7 +78,6 @@
         </div>
       </div>
     </div>
-    
     <div class="call-screen" id="callScreen">
       <div class="call-bg" id="callBg"></div>
       <div class="call-overlay"></div>
@@ -312,52 +98,46 @@
       </div>
     </div>
   </div>
-  
   <audio id="audio" playsinline webkit-playsinline></audio>
-  
   <script>
     var API = "https://stone-wars-api.samodio-fl.workers.dev";
-    
-  var chars = [
-  { id: "yoda", name: "Yoda", subtitle: "Jedi Master", img: "https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/yoda.jpg" },
-  { id: "vader", name: "Darth Vader", subtitle: "Sith Lord", img: "https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/vader.jpg" }
-];
-    
+    var chars = [
+      { id: "yoda", name: "Yoda", subtitle: "Jedi Master", img: "https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/yoda.jpg" },
+      { id: "vader", name: "Darth Vader", subtitle: "Sith Lord", img: "https://raw.githubusercontent.com/samodiofl-boop/stone-wars/main/vader.jpg" }
+    ];
     var current = null;
     var recorder = null;
     var chunks = [];
     var recording = false;
     var speaking = false;
     var active = false;
-    var stream = null;
+    var camStream = null;
+    var micStream = null;
     var timer = null;
-    var ctx = null;
-    
+
     var list = document.getElementById("contactsList");
     var screen = document.getElementById("callScreen");
     var bg = document.getElementById("callBg");
-    var name = document.getElementById("callName");
-    var status = document.getElementById("callStatus");
-    var end = document.getElementById("endBtn");
+    var cname = document.getElementById("callName");
+    var cstatus = document.getElementById("callStatus");
+    var endBtn = document.getElementById("endBtn");
     var audio = document.getElementById("audio");
-    var self = document.getElementById("selfVideo");
-    var listen = document.getElementById("listening");
+    var selfVid = document.getElementById("selfVideo");
+    var listenInd = document.getElementById("listening");
     var clock = document.getElementById("statusTime");
-    
-    function time() {
+
+    function updateClock() {
       var d = new Date();
-      var h = d.getHours();
-      var m = d.getMinutes();
-      clock.textContent = h + ":" + (m < 10 ? "0" : "") + m;
+      clock.textContent = d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
     }
-    time();
-    setInterval(time, 1000);
-    
-    function render() {
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function renderList() {
       var h = "";
       for (var i = 0; i < chars.length; i++) {
         var c = chars[i];
-        h += '<div class="contact-item" onclick="call(\'' + c.id + '\')">';
+        h += '<div class="contact-item" data-id="' + c.id + '">';
         h += '<div class="contact-avatar"><img src="' + c.img + '" onerror="this.parentElement.textContent=\'👤\'"></div>';
         h += '<div class="contact-info"><div class="contact-name">' + c.name + '</div>';
         h += '<div class="contact-subtitle">' + c.subtitle + '</div></div>';
@@ -365,92 +145,116 @@
         h += '</div>';
       }
       list.innerHTML = h;
+      var items = list.querySelectorAll(".contact-item");
+      for (var j = 0; j < items.length; j++) {
+        items[j].onclick = function() { startCall(this.dataset.id); };
+      }
     }
-    
-    function initAudio() {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === "suspended") ctx.resume();
-      audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7v/////////////////////////////////"
-      audio.play().catch(function(){});
-    }
-    
+
     function startCam() {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
         .then(function(s) {
-          stream = s;
+          camStream = s;
           var v = document.createElement("video");
           v.srcObject = s;
           v.autoplay = true;
           v.playsInline = true;
           v.muted = true;
-          self.innerHTML = "";
-          self.appendChild(v);
-        }).catch(function(){});
+          selfVid.innerHTML = "";
+          selfVid.appendChild(v);
+        }).catch(function(e) { console.log("cam error", e); });
     }
-    
+
     function stopCam() {
-      if (stream) {
-        stream.getTracks().forEach(function(t) { t.stop(); });
-        stream = null;
+      if (camStream) {
+        camStream.getTracks().forEach(function(t) { t.stop(); });
+        camStream = null;
       }
-      self.innerHTML = "";
+      selfVid.innerHTML = "";
     }
-    
+
     function setupMic() {
+      console.log("Setting up mic...");
       return navigator.mediaDevices.getUserMedia({ audio: true })
         .then(function(s) {
-          recorder = new MediaRecorder(s, { mimeType: "audio/webm" });
+          console.log("Mic stream obtained");
+          micStream = s;
+          recorder = new MediaRecorder(s);
           recorder.ondataavailable = function(e) {
+            console.log("Audio data available:", e.data.size);
             if (e.data.size > 0) chunks.push(e.data);
           };
           recorder.onstop = function() {
+            console.log("Recorder stopped, chunks:", chunks.length);
             var blob = new Blob(chunks, { type: "audio/webm" });
             chunks = [];
-            if (blob.size > 1000 && active) {
-              send(blob);
+            console.log("Blob created, size:", blob.size);
+            if (blob.size > 500 && active) {
+              sendAudio(blob);
             } else if (active) {
+              console.log("Blob too small, restarting listen");
               startListen();
             }
           };
           return true;
-        }).catch(function() { return false; });
+        }).catch(function(e) {
+          console.log("Mic error:", e);
+          return false;
+        });
     }
-    
+
     function startListen() {
+      console.log("startListen called, recorder:", !!recorder, "speaking:", speaking, "active:", active);
       if (!recorder || speaking || !active) return;
       chunks = [];
-      recorder.start();
-      recording = true;
-      listen.classList.add("active");
-      timer = setTimeout(function() {
-        if (recording) stopListen();
-      }, 5000);
+      try {
+        recorder.start();
+        recording = true;
+        listenInd.classList.add("active");
+        console.log("Recording started");
+        timer = setTimeout(function() {
+          console.log("Timer fired, stopping listen");
+          stopListen();
+        }, 5000);
+      } catch(e) {
+        console.log("Start recording error:", e);
+      }
     }
-    
+
     function stopListen() {
+      console.log("stopListen called, recording:", recording);
       if (!recorder || !recording) return;
       clearTimeout(timer);
-      recorder.stop();
+      try {
+        recorder.stop();
+      } catch(e) {
+        console.log("Stop recording error:", e);
+      }
       recording = false;
-      listen.classList.remove("active");
+      listenInd.classList.remove("active");
     }
-    
-    function call(id) {
+
+    function startCall(id) {
+      console.log("Starting call:", id);
       current = null;
       for (var i = 0; i < chars.length; i++) {
         if (chars[i].id === id) current = chars[i];
       }
       if (!current) return;
-      
-      initAudio();
+
+      // Unlock audio
+      audio.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7";
+      audio.play().catch(function(){});
+
       active = true;
       screen.classList.add("active");
       bg.style.backgroundImage = "url(" + current.img + ")";
-      name.textContent = current.name;
-      status.textContent = "Connecting...";
+      cname.textContent = current.name;
+      cstatus.textContent = "Connecting...";
       startCam();
-      
+
       setupMic().then(function() {
+        console.log("Mic setup done, calling API...");
         return fetch(API + "/api/startCall", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -459,76 +263,92 @@
       }).then(function(r) {
         return r.json();
       }).then(function(d) {
+        console.log("API response:", d);
         if (d.error) throw new Error(d.error);
-        status.textContent = "Connected";
-        play(d.audio);
+        cstatus.textContent = "Connected";
+        playAudio(d.audio);
       }).catch(function(e) {
-        console.error(e);
-        status.textContent = "Failed";
-        setTimeout(hangup, 2000);
+        console.log("Call error:", e);
+        cstatus.textContent = "Failed";
+        setTimeout(endCall, 2000);
       });
     }
-    
-    function send(blob) {
+
+    function sendAudio(blob) {
+      console.log("sendAudio called, blob size:", blob.size);
       if (!active) return;
-      listen.classList.remove("active");
-      status.textContent = "Thinking...";
-      
+      listenInd.classList.remove("active");
+      cstatus.textContent = "Thinking...";
+
       var fd = new FormData();
       fd.append("character", current.id);
-      fd.append("audio", blob);
-      
+      fd.append("audio", blob, "audio.webm");
+
       fetch(API + "/api/chat", { method: "POST", body: fd })
         .then(function(r) { return r.json(); })
         .then(function(d) {
+          console.log("Chat response:", d);
           if (d.error) throw new Error(d.error);
-          play(d.audio);
+          playAudio(d.audio);
         }).catch(function(e) {
-          console.error(e);
-          status.textContent = "Connected";
+          console.log("Chat error:", e);
+          cstatus.textContent = "Connected";
           if (active) startListen();
         });
     }
-    
-    function play(url) {
+
+    function playAudio(url) {
+      console.log("playAudio called");
       if (!url || !active) {
         if (active) startListen();
         return;
       }
       speaking = true;
-      status.textContent = "Speaking...";
+      cstatus.textContent = "Speaking...";
       audio.src = url;
       audio.onended = function() {
+        console.log("Audio ended");
         speaking = false;
-        status.textContent = "Connected";
+        cstatus.textContent = "Connected";
         if (active) startListen();
       };
-      audio.onerror = function() {
+      audio.onerror = function(e) {
+        console.log("Audio error:", e);
         speaking = false;
-        status.textContent = "Connected";
+        cstatus.textContent = "Connected";
         if (active) startListen();
       };
-      audio.play().catch(function() {
+      audio.play().catch(function(e) {
+        console.log("Play error:", e);
         speaking = false;
         if (active) startListen();
       });
     }
-    
-    function hangup() {
+
+    function endCall() {
+      console.log("Ending call");
       active = false;
       stopCam();
-      stopListen();
-      if (recorder && recorder.state !== "inactive") recorder.stop();
+      if (recorder && recording) {
+        try { recorder.stop(); } catch(e) {}
+      }
+      if (micStream) {
+        micStream.getTracks().forEach(function(t) { t.stop(); });
+        micStream = null;
+      }
+      recorder = null;
+      recording = false;
       audio.pause();
       audio.src = "";
       current = null;
-      recording = false;
       speaking = false;
       screen.classList.remove("active");
+      listenInd.classList.remove("active");
+      clearTimeout(timer);
     }
-    
-    end.onclick = hangup;
-    render();
+
+    endBtn.onclick = endCall;
+    renderList();
   </script>
 </body>
 </html>
