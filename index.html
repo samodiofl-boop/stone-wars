@@ -117,10 +117,10 @@
   <script>
     const API_BASE = 'https://stone-wars-api.samodio-fl.workers.dev';
     const characters = [
-  { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png' },
-  { id: 'vader', name: 'Darth Vader', subtitle: 'Sith Lord', image: 'https://i.imgur.com/BcLKvpW.png' }
-];
-      let currentCharacter = null, sessionId = null, mediaRecorder = null, audioChunks = [], isRecording = false, isSpeaking = false, selfVideoStream = null, silenceTimer = null;
+      { id: 'yoda', name: 'Yoda', subtitle: 'Jedi Master', image: 'https://static.wikia.nocookie.net/starwars/images/d/d6/Yoda_SWSB.png' },
+      { id: 'vader', name: 'Darth Vader', subtitle: 'Sith Lord', image: 'https://i.imgur.com/BcLKvpW.png' }
+    ];
+    let currentCharacter = null, mediaRecorder = null, audioChunks = [], isRecording = false, isSpeaking = false, selfVideoStream = null, silenceTimer = null, callActive = false;
     const contactsList = document.getElementById('contactsList'), facetimeScreen = document.getElementById('facetimeScreen'), facetimeBackground = document.getElementById('facetimeBackground'), facetimeName = document.getElementById('facetimeName'), facetimeStatus = document.getElementById('facetimeStatus'), endCallBtn = document.getElementById('endCallBtn'), statusTime = document.getElementById('statusTime'), audioPlayer = document.getElementById('audioPlayer'), selfVideo = document.getElementById('selfVideo'), listeningIndicator = document.getElementById('listeningIndicator');
     
     function updateTime() { const now = new Date(); statusTime.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`; } updateTime(); setInterval(updateTime, 1000);
@@ -156,20 +156,20 @@
         mediaRecorder.onstop = async () => { 
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
           audioChunks = []; 
-          if (audioBlob.size > 1000) { await sendAudio(audioBlob); } 
-          else { startListening(); }
+          if (audioBlob.size > 1000 && callActive) { await sendAudio(audioBlob); } 
+          else if (callActive) { startListening(); }
         }; 
         return true; 
       } catch (e) { console.error('Microphone not available:', e); return false; } 
     }
     
     function startListening() { 
-      if (!mediaRecorder || isSpeaking || !sessionId) return; 
+      if (!mediaRecorder || isSpeaking || !callActive) return; 
       audioChunks = []; 
       mediaRecorder.start(); 
       isRecording = true; 
       listeningIndicator.classList.add('active');
-      silenceTimer = setTimeout(() => { if (isRecording) stopListening(); }, 4000);
+      silenceTimer = setTimeout(() => { if (isRecording) stopListening(); }, 5000);
     }
     
     function stopListening() { 
@@ -183,6 +183,7 @@
     async function startCall(characterId) { 
       currentCharacter = characters.find(c => c.id === characterId); 
       if (!currentCharacter) return; 
+      callActive = true;
       facetimeScreen.classList.add('active', 'connecting'); 
       facetimeBackground.style.backgroundImage = `url('${currentCharacter.image}')`; 
       facetimeName.textContent = currentCharacter.name; 
@@ -193,7 +194,6 @@
         const response = await fetch(`${API_BASE}/api/startCall`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ character: characterId }) }); 
         const data = await response.json(); 
         if (data.error) throw new Error(data.error); 
-        sessionId = data.sessionId; 
         facetimeScreen.classList.remove('connecting'); 
         facetimeStatus.textContent = 'FaceTime Video'; 
         await playAudio(data.audio); 
@@ -205,13 +205,12 @@
     }
     
     async function sendAudio(audioBlob) { 
-      if (!sessionId) return; 
+      if (!callActive) return; 
       listeningIndicator.classList.remove('active');
       facetimeStatus.textContent = 'Thinking...';
       try { 
         const formData = new FormData(); 
         formData.append('character', currentCharacter.id); 
-        formData.append('sessionId', sessionId); 
         formData.append('audio', audioBlob); 
         const response = await fetch(`${API_BASE}/api/chat`, { method: 'POST', body: formData }); 
         const data = await response.json(); 
@@ -220,13 +219,13 @@
       } catch (error) { 
         console.error('Chat error:', error); 
         facetimeStatus.textContent = 'FaceTime Video';
-        startListening(); 
+        if (callActive) startListening(); 
       } 
     }
     
     async function playAudio(audioDataUrl) { 
       return new Promise((resolve) => { 
-        if (!audioDataUrl) { resolve(); startListening(); return; } 
+        if (!audioDataUrl) { resolve(); if (callActive) startListening(); return; } 
         isSpeaking = true; 
         facetimeStatus.textContent = 'Speaking...';
         audioPlayer.src = audioDataUrl; 
@@ -234,21 +233,20 @@
           isSpeaking = false; 
           facetimeStatus.textContent = 'FaceTime Video'; 
           resolve(); 
-          startListening();
+          if (callActive) startListening();
         }; 
-        audioPlayer.onerror = () => { isSpeaking = false; facetimeStatus.textContent = 'FaceTime Video'; resolve(); startListening(); }; 
-        audioPlayer.play().catch(() => { isSpeaking = false; resolve(); startListening(); }); 
+        audioPlayer.onerror = () => { isSpeaking = false; facetimeStatus.textContent = 'FaceTime Video'; resolve(); if (callActive) startListening(); }; 
+        audioPlayer.play().catch(() => { isSpeaking = false; resolve(); if (callActive) startListening(); }); 
       }); 
     }
     
     function endCall() { 
+      callActive = false;
       stopSelfVideo(); 
       stopListening();
       if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); 
       audioPlayer.pause(); 
       audioPlayer.src = ''; 
-      if (sessionId) fetch(`${API_BASE}/api/endCall`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId }) }).catch(() => {}); 
-      sessionId = null; 
       currentCharacter = null; 
       isRecording = false; 
       isSpeaking = false; 
